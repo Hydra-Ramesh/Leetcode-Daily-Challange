@@ -1,38 +1,51 @@
 #include <iostream>
-#include <unordered_set>
 #include <vector>
+#include <string>
+
 using namespace std;
 
-int countPalindromicSubsequence(string s) {
-    vector<int> first(26, -1), last(26, -1);
-    int n = s.length();
-    
-    // Record the first and last occurrence of each character
-    for (int i = 0; i < n; ++i) {
-        if (first[s[i] - 'a'] == -1) {
-            first[s[i] - 'a'] = i;
+class Solution {
+public:
+    string shiftingLetters(string str, vector<vector<int>>& shifts) {
+        int length = str.size();
+        vector<int> delta(length + 1, 0);
+
+        for (const auto& shift : shifts) {
+            int direction = (shift[2] == 0) ? -1 : 1;
+            delta[shift[0]] += direction;
+            delta[shift[1] + 1] -= direction;
         }
-        last[s[i] - 'a'] = i;
-    }
-    
-    int count = 0;
-    
-    // For each character, count unique characters between its first and last occurrence
-    for (int i = 0; i < 26; ++i) {
-        if (first[i] != -1 && last[i] > first[i]) {
-            unordered_set<char> unique_chars;
-            for (int j = first[i] + 1; j < last[i]; ++j) {
-                unique_chars.insert(s[j]);
-            }
-            count += unique_chars.size();
+
+        for (int i = 1; i <= length; ++i) {
+            delta[i] += delta[i - 1];
         }
+
+        string result(length, 'a');
+        for (int i = 0; i < length; ++i) {
+            int newCharIndex = (str[i] - 'a' + delta[i] % 26 + 26) % 26;
+            result[i] = 'a' + newCharIndex;
+        }
+
+        return result;
     }
-    
-    return count;
-}
+};
 
 int main() {
-    string s = "aabca";
-    cout << countPalindromicSubsequence(s) << endl; // Output: 3
+    Solution solution;
+
+    // Test case 1
+    string str = "abc";
+    vector<vector<int>> shifts = {{0, 1, 0}, {1, 2, 1}};
+
+    cout << "Original string: " << str << endl;
+    cout << "After shifts: " << solution.shiftingLetters(str, shifts) << endl;
+
+    // Test case 2
+    str = "abcdef";
+    shifts = {{0, 2, 1}, {2, 5, 0}, {1, 4, 1}};
+
+    cout << "Original string: " << str << endl;
+    cout << "After shifts: " << solution.shiftingLetters(str, shifts) << endl;
+
     return 0;
 }
